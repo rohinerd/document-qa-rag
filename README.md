@@ -44,5 +44,36 @@ Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https:/
 
 - **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher.
 - **Confusion between related sections:** Several Applying questions were ranked correctly in the top three but not at the top, and "After the application" was the most common rival.
+
+## Architecture
+
+The pipeline has five stages:
+
+1. **Load:** the GOV.UK guide is saved as plain text, with navigation and cookie banners removed.
+2. **Split by section:** the text is divided at its five headings, so every chunk knows which section it came from.
+3. **Chunk:** each section is split into overlapping windows of words (120 words with 20 overlap by default).
+4. **Embed and index:** each chunk is converted to a vector with `all-MiniLM-L6-v2` from sentence-transformers, and stored in Chroma with its section label.
+5. **Retrieve:** a question is embedded the same way, and the closest chunks are returned.
+
+The embedding model is a third-party open model, downloaded automatically when the notebook runs. It was chosen because it's small enough to run in a free Colab session and produces good results for English text. The model isn't stored in this repository.
+
+Answer generation with a language model and citations is not yet built.
+
+## How to run
+
+The project runs in Google Colab, and needs no local installation or cloud account.
+
+1. Open the RAG notebook in Colab.
+2. Run the cells in order from the top: install the libraries, load the guide text from this repository, split and chunk it, build the Chroma index, and score retrieval against `data/eval.csv`.
+3. Run the MRR and NDCG cell and the comparison cell to reproduce the chunk-size results. Runs are logged to MLflow in the notebook session.
+
+The guide text is loaded from `data/flexible-working.txt`, and the evaluation questions are in `data/eval.csv`. Colab sessions reset, so rerun the cells in order if you return later.
+
+## Limitations
+
+- **Not legal advice.** The tool answers from the GOV.UK guidance only. It doesn't interpret an individual's circumstances, and it isn't a substitute for advice from Acas, a solicitor, or an employment adviser.
+- **Narrow scope.** It covers one GOV.UK guide, and answers may be incomplete where the guide points to other pages.
+- **Point-in-time text.** The guide was saved on 1 November 2026. Changes to the GOV.UK page won't appear until the text is updated.
+- **Retrieval only.** Until answer generation is added, the project shows whether the right section is found, not whether a generated answer is correct.
 - **Small sample:** 19 questions means one answer changes the score by about 5 percentage points. Treat the results as indicative, not definitive.
 - **No answer generation yet:** This measures whether the right section is found, not whether the final answer is correct.
