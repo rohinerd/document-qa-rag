@@ -40,10 +40,26 @@ The differences are one or two questions out of 19, so no chunk size is clearly 
 
 Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https://github.com/rohinerd/document-qa-rag/blob/main/results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx). The earlier 11-question run is kept in `results/` for reference.
 
+### Answer step
+
+Answers are generated with Gemini (`gemini-flash-latest`) from the top three retrieved passages, with a prompt that asks the model to answer only from those passages and cite the section in square brackets.
+
+The answer step was scored by hand on all 19 evaluation questions. Judgements were made against the GOV.UK guide.
+
+| Metric | Result |
+|---|---|
+| Answer accuracy (substantively correct) | 84% (16/19) |
+| Citation accuracy (correct section cited) | 89% (17/19) |
+
+Two answers were refused because retrieval missed the source passage (questions 3 and 6). One answer (question 18) was cut off before its final list item. Scores were logged to MLflow in the `answer-step-test` experiment.
+
+This is a manual check on a small set, not a benchmark. The Overview judgements were made from earlier extracts and should be rechecked against the live page.
+
 ### Known weaknesses
 
-- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher.
+- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher. In the answer step, this caused both refusals.
 - **Confusion between related sections:** Several Applying questions were ranked correctly in the top three but not at the top, and "After the application" was the most common rival.
+- **Answer step:** Two refusals trace back to retrieval misses, and one answer was truncated. Scoring was manual, on 19 questions, so the figures are indicative.
 
 ## Architecture
 
