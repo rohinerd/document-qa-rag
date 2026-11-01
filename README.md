@@ -26,17 +26,19 @@ The evaluation set in `data/eval.csv` has 19 questions drawn from the GOV.UK fle
 
 ### Method
 
-Each question is run through retrieval. The top-1 score checks whether the first retrieved passage comes from the expected section. The top-3 score checks whether the expected section appears anywhere in the top three passages. The index is built with `all-MiniLM-L6-v2` embeddings in Chroma. Each chunk size is logged as an MLflow run.
+Each question is run through retrieval. The top-1 score checks whether the first retrieved passage comes from the expected section. The top-3 score checks whether the expected section appears anywhere in the top three passages. MRR (mean reciprocal rank) averages the inverse of the rank at which the expected section first appears. NDCG@3 is a discounted ranking score over the top three results, with one relevant section per question. The index is built with `all-MiniLM-L6-v2` embeddings in Chroma. Each chunk size is logged as an MLflow run.
 
 ### Chunk size comparison
 
-| Chunk size (words) | Overlap | Chunks | Top-1 | Top-3 |
-|---|---|---|---|---|
-| 120 | 20 | 14 | 68% (13/19) | 89% (17/19) |
-| 200 | 40 | 10 | 58% (11/19) | 89% (17/19) |
-| 350 | 50 | 5 | 63% (12/19) | 95% (18/19) |
+| Chunk size (words) | Overlap | Chunks | Top-1       | Top-3       | MRR   | NDCG@3 |
+|--------------------|---------|--------|-------------|-------------|-------|--------|
+| 120                | 20      | 14     | 68% (13/19) | 89% (17/19) | 0.789 | 0.817  |
+| 200                | 40      | 10     | 58% (11/19) | 89% (17/19) | 0.728 | 0.771  |
+| 350                | 50      | 5      | 63% (12/19) | 95% (18/19) | 0.763 | 0.810  |
 
-The differences are one or two questions out of 19, so no chunk size is clearly better on this set. 120 words with 20 words of overlap is used as the default, since it has the strongest top-1 result. Full results are in [results/chunk_size_comparison.xlsx](results/chunk_size_comparison.xlsx).
+The differences are one or two questions out of 19, so no chunk size is clearly better on this set. The 120-word setting with 20 words of overlap is the default, since it leads on top-1, MRR, and NDCG@3. The 350-word setting has the highest top-3 rate, so it may suit a later step that uses several passages at once.
+
+Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https://github.com/rohinerd/document-qa-rag/blob/main/results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx). The earlier 11-question run is kept in `results/` for reference.
 
 ### Known weaknesses
 
