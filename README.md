@@ -3,7 +3,7 @@
 The source documents are taken from GOV.UK, the official UK government website.
 
 - **Source:** GOV.UK guidance on flexible working: [Flexible working](https://www.gov.uk/flexible-working), including its sections on types of flexible working, applying, the application process, and appeals. The text was taken from the [printable version](https://www.gov.uk/flexible-working/print).
-- **Retrieved:** [01/11/2026]
+- **Retrieved:** 01/11/2026
 - **Licence:** Crown copyright, published under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 
 The project does not include any personal data or non-public government information.
