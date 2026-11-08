@@ -65,7 +65,7 @@ Three prompt versions were compared on the same 19 questions, using the same ret
 
 Substance did not change across versions. Version 1 cited with a misspelled section name in two answers, and version 2 copied the passage label into its citations. Version 3 fixed both, which is the change that mattered. Scores are manual, from a single run, and logged to MLflow in the `prompt-versions` experiment.
 
-This is a manual check on a small set, not a benchmark. The Overview judgements were made from earlier extracts and should be rechecked against the live page.
+This is a manual check on a small set, not a benchmark. The Overview judgements were checked against the live GOV.UK page on the review date (5 November 2026), and all six match the guide's wording.
 
 ### Known weaknesses
 
