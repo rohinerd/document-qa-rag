@@ -1,3 +1,7 @@
+# Flexible Working Q&A
+
+A question-answering tool that answers questions about UK flexible working rules using GOV.UK guidance, and shows which section of the guide each answer comes from.
+
 ## Data and licence
 
 The source documents are taken from GOV.UK, the official UK government website.
@@ -7,10 +11,6 @@ The source documents are taken from GOV.UK, the official UK government website.
 - **Licence:** Crown copyright, published under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 
 The project does not include any personal data or non-public government information.
-
-# Flexible Working Q&A
-
-A question-answering tool that answers questions about UK flexible working rules using GOV.UK guidance, and shows which section of the guide each answer comes from.
 
 ## Problem and audience
 
@@ -44,7 +44,7 @@ Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https:/
 
 Answers are generated with Gemini (`gemini-flash-latest`) from the top three retrieved passages. The prompt asks the model to answer only from those passages and cite the section in square brackets.
 
-The answer step was scored by hand on all 19 evaluation questions. Judgements were made against the GOV.UK guide.
+The answer step was scored by hand on all 19 evaluation questions. Judgements were made against the GOV.UK guide. The Overview judgements were checked against the live GOV.UK page on the review date (5 November 2026), and all six match the guide's wording.
 
 | Metric | Result |
 |---|---|
@@ -65,11 +65,11 @@ Three prompt versions were compared on the same 19 questions, using the same ret
 
 Substance did not change across versions. Version 1 cited with a misspelled section name in two answers, and version 2 copied the passage label into its citations. Version 3 fixed both, which is the change that mattered. Scores are manual, from a single run, and logged to MLflow in the `prompt-versions` experiment.
 
-This is a manual check on a small set, not a benchmark. The Overview judgements were checked against the live GOV.UK page on the review date (5 November 2026), and all six match the guide's wording.
+This is a manual check on a small set, not a benchmark.
 
 ### Known weaknesses
 
-- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher. In the answer step, this caused both refusals.
+- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher. The guide's Overview states that a request can be made from the first day in a job, so the refusal on question 3 is a retrieval failure, not a gap in the guide. In the answer step, these misses caused both refusals.
 - **Confusion between related sections:** Several Applying questions were ranked correctly in the top three but not at the top, and "After the application" was the most common rival.
 - **Small sample:** 19 questions means one answer changes the score by about 5 percentage points. Treat the results as indicative, not definitive.
 - **Answer step:** scored manually on 19 questions from a single run, so the figures are indicative. One answer was truncated, and the answers depend on retrieval, so retrieval misses carry through.
