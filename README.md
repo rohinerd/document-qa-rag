@@ -40,6 +40,10 @@ The differences are one or two questions out of 19, so no chunk size is clearly 
 
 Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https://github.com/rohinerd/document-qa-rag/blob/main/results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx). The earlier 11-question run is kept in `results/` for reference.
 
+### Targeted retrieval fix (question 3)
+
+A dedicated chunk containing only the first-day sentence from the Overview was added to the 120-word index in a separate test collection. Question 3 moved from a miss to the top of the results. Across all 19 questions, top-1 rose from 13 to 14 and top-3 from 17 to 18, with no other question changing. The test was run on a separate index, so the main results above are unchanged until the fix is adopted. With 19 questions, this is one question's gain, reported as a targeted fix rather than a general improvement.
+
 ### Answer step
 
 Answers are generated with Gemini (`gemini-flash-latest`) from the top three retrieved passages. The prompt asks the model to answer only from those passages and cite the section in square brackets.
@@ -69,7 +73,7 @@ This is a manual check on a small set, not a benchmark.
 
 ### Known weaknesses
 
-- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") and question 6 ("good business reason") never placed the correct section in the top three. Both answers are in the Overview, but the search ranked Applying and Appeals passages higher. The guide's Overview states that a request can be made from the first day in a job, so the refusal on question 3 is a retrieval failure, not a gap in the guide. In the answer step, these misses caused both refusals.
+- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") now ranks correctly with a dedicated first-day chunk, in the test index. Question 6 ("good business reason") still never places the correct section in the top three, because the search ranks Applying and Appeals passages higher. In the answer step, question 6 caused a refusal, and question 3 caused one before the fix.
 - **Confusion between related sections:** Several Applying questions were ranked correctly in the top three but not at the top, and "After the application" was the most common rival.
 - **Small sample:** 19 questions means one answer changes the score by about 5 percentage points. Treat the results as indicative, not definitive.
 - **Answer step:** scored manually on 19 questions from a single run, so the figures are indicative. One answer was truncated, and the answers depend on retrieval, so retrieval misses carry through.
@@ -93,7 +97,7 @@ The project runs in Google Colab, and needs no local installation or cloud accou
 
 1. Open the RAG notebook in Colab.
 2. Run the cells in order from the top: install the libraries, load the guide text from this repository, split and chunk it, build the Chroma index, and score retrieval against `data/eval.csv`.
-3. Run the MRR and NDCG cell and the comparison cell to reproduce the chunk-size results.
+3. Run the MRR and NDCG cell and the comparison cell to reproduce the chunk-size results. The targeted first-day test (section 5a) is optional and sits on a separate index.
 4. Define the prompt versions, then the answer function, then run the answer cells to reproduce the answer step and the prompt comparison. Runs are logged to MLflow in the notebook session.
 
 The guide text is loaded from `data/flexible-working.txt`, and the evaluation questions are in `data/eval.csv`. Answer generation needs a free Gemini API key stored in Colab's Secrets panel. Colab sessions reset, so rerun the cells in order if you return later.
