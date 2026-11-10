@@ -42,7 +42,7 @@ Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https:/
 
 ### Targeted retrieval fix (question 3)
 
-A dedicated chunk containing only the first-day sentence from the Overview was added to the 120-word index in a separate test collection. Question 3 moved from a miss to the top of the results. Across all 19 questions, top-1 rose from 13 to 14 and top-3 from 17 to 18, with no other question changing. The test was run on a separate index, so the main results above are unchanged until the fix is adopted. With 19 questions, this is one question's gain, reported as a targeted fix rather than a general improvement.
+A dedicated chunk containing only the first-day sentence from the Overview was tested first on a separate index, then adopted in the main pipeline. The main index reproduces the test result: top-1 rose from 13 to 14 out of 19, and top-3 from 17 to 18. Question 3 now ranks the Overview first. Question 12 moved from a top-1 miss to a top-3 hit, with Overview now ranking above the Types section, so its net effect is neutral on the totals. Question 6 still does not reach the top three. The adopted run is logged to MLflow in `chunk-size-comparison`. With 19 questions, this is one question's gain, reported as a targeted fix rather than a general improvement.
 
 ### Answer step
 
