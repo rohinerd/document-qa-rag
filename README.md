@@ -36,13 +36,15 @@ Each question is run through retrieval. The top-1 score checks whether the first
 | 200                | 40      | 10     | 58% (11/19) | 89% (17/19) | 0.728 | 0.771  |
 | 350                | 50      | 5      | 63% (12/19) | 95% (18/19) | 0.763 | 0.810  |
 
+The table shows the baseline index. The adopted result, which includes the first-day chunk, is in the targeted-fix section below.
+
 The differences are one or two questions out of 19, so no chunk size is clearly better on this set. The 120-word setting with 20 words of overlap is the default, since it leads on top-1, MRR, and NDCG@3. The 350-word setting has the highest top-3 rate, so it may suit a later step that uses several passages at once.
 
 Full results are in [results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx](https://github.com/rohinerd/document-qa-rag/blob/main/results/chunk_size_comparison_v2_19q_mrr_ndcg.xlsx). The earlier 11-question run is kept in `results/` for reference.
 
 ### Targeted retrieval fix (question 3)
 
-A dedicated chunk containing only the first-day sentence from the Overview was tested first on a separate index, then adopted in the main pipeline. The main index reproduces the test result: top-1 rose from 13 to 14 out of 19, and top-3 from 17 to 18. Question 3 now ranks the Overview first. Question 12 moved from a top-1 miss to a top-3 hit, with Overview now ranking above the Types section, so its net effect is neutral on the totals. Question 6 still does not reach the top three. The adopted run is logged to MLflow in `chunk-size-comparison`. With 19 questions, this is one question's gain, reported as a targeted fix rather than a general improvement.
+A dedicated chunk containing only the first-day sentence from the Overview was tested first on a separate index, then adopted in the main pipeline. The main index reproduces the test result: top-1 rose from 13 to 14 out of 19, and top-3 from 17 to 18. Question 3 now ranks the Overview first. Question 12 moved from a top-1 miss to a top-3 hit, with Overview now ranking above the Types section, so its net effect is neutral on the totals. The adopted run is logged to MLflow in `chunk-size-comparison`. With 19 questions, this is one question's gain, reported as a targeted fix rather than a general improvement.
 
 ### Answer step
 
@@ -73,7 +75,7 @@ This is a manual check on a small set, not a benchmark.
 
 ### Known weaknesses
 
-- **Questions with no retrieval hit:** Question 3 ("From when can an employee make a request?") now ranks correctly with a dedicated first-day chunk, in the test index. Question 6 ("good business reason") still never places the correct section in the top three, because the search ranks Applying and Appeals passages higher. In the answer step, question 6 caused a refusal, and question 3 caused one before the fix.
+- **Questions with no retrieval hit:** Question 6 ("good business reason") still never places the correct section in the top three, because the search ranks Applying and Appeals passages higher. Question 3 ("From when can an employee make a request?") now ranks correctly after the first-day chunk was adopted in the main pipeline. Before the fix, its miss caused a refusal in the answer step, and question 6 still does.
 - **Confusion between related sections:** Several Applying questions were ranked correctly in the top three but not at the top, and "After the application" was the most common rival.
 - **Small sample:** 19 questions means one answer changes the score by about 5 percentage points. Treat the results as indicative, not definitive.
 - **Answer step:** scored manually on 19 questions from a single run, so the figures are indicative. One answer was truncated, and the answers depend on retrieval, so retrieval misses carry through.
@@ -84,7 +86,7 @@ The pipeline has six stages:
 
 1. **Load:** the GOV.UK guide is saved as plain text, with navigation and cookie banners removed.
 2. **Split by section:** the text is divided at its five headings, so every chunk knows which section it came from.
-3. **Chunk:** each section is split into overlapping windows of words (120 words with 20 overlap by default).
+3. **Chunk:** each section is split into overlapping windows of words (120 words with 20 overlap by default). A first-day sentence is added as its own chunk.
 4. **Embed and index:** each chunk is converted to a vector with `all-MiniLM-L6-v2` from sentence-transformers, and stored in Chroma with its section label.
 5. **Retrieve:** a question is embedded the same way, and the closest chunks are returned.
 6. **Answer:** the top passages are placed in a prompt, and Gemini answers from them with section citations.
@@ -96,7 +98,7 @@ The embedding model is a third-party open model, downloaded automatically when t
 The project runs in Google Colab, and needs no local installation or cloud account.
 
 1. Open the RAG notebook in Colab.
-2. Run the cells in order from the top: install the libraries, load the guide text from this repository, split and chunk it, build the Chroma index, and score retrieval against `data/eval.csv`.
+2. Run the cells in order from the top: install the libraries, load the guide text from this repository, split and chunk it, add the first-day chunk, build the Chroma index, and score retrieval against `data/eval.csv`.
 3. Run the MRR and NDCG cell and the comparison cell to reproduce the chunk-size results. The targeted first-day test (section 5a) is optional and sits on a separate index.
 4. Define the prompt versions, then the answer function, then run the answer cells to reproduce the answer step and the prompt comparison. Runs are logged to MLflow in the notebook session.
 
